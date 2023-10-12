@@ -19,7 +19,11 @@ std::size_t encode<sensor_data>(const sensor_data &data, std::uint8_t *buf,
 {
     ::pb_ostream_t stream = ::pb_ostream_from_buffer(buf, size);
 
-    return ::pb_encode(&stream, sensor_data_fields, &data);
+    if (::pb_encode(&stream, sensor_data_fields, &data)) {
+        return size;
+    }
+
+    return 0;
 }
 }; // namespace data
 
