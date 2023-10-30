@@ -1,0 +1,4 @@
+numpy
+astral
+pyyaml
+picamera2
