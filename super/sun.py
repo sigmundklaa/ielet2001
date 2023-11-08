@@ -1,31 +1,31 @@
 
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from astral import LocationInfo
 from astral.sun import sun as ASun
 
-SR_MARGIN_HR = timedelta(hours=1)
-SS_MARGIN_HR = timedelta(hours=- 1)
+SR_MARGIN = timedelta(hours=1)
+SS_MARGIN = timedelta(hours=- 1)
 
-CITY = LocationInfo('Melhus', 'Norway', 'Europe/Oslo')
+CITY = LocationInfo('Trondheim', 'Norway', 'Europe/Oslo')
 
 
-def sun() -> ASun:
-    return ASun(CITY.observer, date=date(2009, 4, 22))
+def sun(d: datetime) -> ASun:
+    return ASun(CITY.observer, date=d, tzinfo=CITY.timezone)
 
 
 def is_daytime(t: datetime = datetime.now(),
-               srise_margin_hr: timedelta = SR_MARGIN_HR,
-               sset_margin_hr: timedelta = SS_MARGIN_HR,
+               srise_margin: timedelta = SR_MARGIN,
+               sset_margin: timedelta = SS_MARGIN,
                ) -> bool:
     """Checks whether we are in daytime by comparing the time to the times
     of sunset and sunrise.
 
     :param t: Time to compare against 
-    :param sset_margin_hr: Margin (in hours) from sunset.
-    :param srise_margin_hr: Margin (in hours) from sunrise.
+    :param srise_margin: Margin from sunrise.
+    :param sset_margin: Margin from sunset.
     """
-    s = sun()
-    srise = s['sunrise'] + srise_margin_hr
-    sset = s['sunset'] + sset_margin_hr
+    s = sun(t)
+    srise = s['sunrise'] + srise_margin
+    sset = s['sunset'] + sset_margin
 
     return srise < t.replace(tzinfo=srise.tzinfo) < sset
