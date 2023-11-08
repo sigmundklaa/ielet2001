@@ -1,4 +1,5 @@
 numpy
 astral
 pyyaml
-picamera2
+pyserial
+RPi.GPIO
