@@ -6,8 +6,9 @@ import camera
 import config
 import upload
 
+
 def main(conf_file: str) -> None:
-    workers = [upload.worker]
+    workers = [upload.worker, camera.worker]
     conf = config.load(conf_file)
 
     for worker in workers:
