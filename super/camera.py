@@ -39,7 +39,7 @@ def _build_relpath(base, offset: int = 0) -> Path:
 
 
 def _build_filepath(base: Path, num: int) -> Path:
-    return base.joinpath(f'image_{num}.jpeg')
+    return base.joinpath(f'image_{str(num).zfill(5)}.jpeg')
 
 
 def _capture(cam: Picamera2, base: Path) -> None:
@@ -58,7 +58,19 @@ def _td_hours(delta: timedelta) -> int:
     return delta.seconds // 3600
 
 
-@ config.tagged('camera')
+def _clean_old(img_path: Path) -> None:
+    logging.info('Cleaning old photos')
+
+    expiry = datetime.now() - timedelta(seconds=20)
+    images = sorted((img_path.joinpath(x) for x in (os.listdir(img_path))),
+                    key=os.path.getmtime, reverse=False)
+
+    while datetime.fromtimestamp(os.path.getmtime(images[0])) < expiry:
+        logging.info(f'Removing file {images[0]}')
+        os.remove(images.pop(0))
+
+
+@config.tagged('camera')
 def worker(config: dict) -> None:
     img_path = config.pop('outdir', IMG_PATH)
     if isinstance(img_path, str):
@@ -90,6 +102,8 @@ def worker(config: dict) -> None:
             _queue_upload(dst_dir, img_path)
 
             logging.info('Image captured, upload queued')
+
+            _clean_old(img_path)
         else:
             logging.debug('Not daytime, skipping capture')
 
