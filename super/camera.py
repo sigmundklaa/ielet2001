@@ -50,8 +50,7 @@ def _capture(cam: Picamera2, base: Path) -> None:
 
 
 def _queue_upload(upload_base: PurePath, base: Path) -> None:
-    # path = _build_relpath(base, offset=0)
-    path = base.joinpath('test.txt')
+    path = _build_relpath(base, offset=0)
     uploader.enqueue(path, upload_base.joinpath(path.stem + path.suffix))
 
 
@@ -75,7 +74,7 @@ def worker(config: dict) -> None:
 
     sr_margin, ss_margin = timedelta(**sr_margin), timedelta(**ss_margin)
 
-    delay = config.pop('capture_delay_hr', 30/3600)
+    delay = config.pop('capture_delay_hr', 1)
 
     cam = Picamera2()
     cam.configure(cam.create_still_configuration())
