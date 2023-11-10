@@ -37,7 +37,7 @@ class Modem:
     def _ping(self) -> None:
         self._write('AT\r\n'.encode())
 
-        read = self._ser.read(20)
+        read = self._read_response()
         print(read)
         if len(read) == 0:
             raise Exception('Timed out')
@@ -54,7 +54,8 @@ class Modem:
 
         return bread
 
-    def _send_cmd(self, cmd: str, *values: Any) -> None:
+    def _send_cmd(self, cmd: str, *values: Any,
+                  err_check: bool = True) -> None:
         values = list(values).copy()
 
         if len(values) > 0:
@@ -73,7 +74,11 @@ class Modem:
         data = f'AT+{cmd}{"".join(values)}{NEWLINE}'
 
         self._write(data.encode())
-        print(self._read_response())
+        time.sleep(0.5)
+        read = self._read_response()
+        print(read, repr(read.decode()))
+        if err_check and 'ERROR' in read.decode():
+            raise Exception()
 
     def _write(self, data: bytes) -> None:
         print(data)
@@ -84,23 +89,25 @@ class Modem:
         self._send_cmd('CFTPSSTART')
         self._send_cmd('CFTPSLOGIN', serv, ',', port, ',', user, ',', pwd)
         time.sleep(0.5)
+        self._send_cmd('CFTPSLIST')
 
     def ftp_logout(self):
-        self._send_cmd('CFTPSLOGOUT')
+        self._send_cmd('CFTPSLOGOUT', err_check=False)
         time.sleep(0.5)
-        self._send_cmd('CFTPSSTOP')
+
+        self._send_cmd('CFTPSSTOP', err_check=False)
 
     def ftp_upload(self, path: str):
         # TODO: necessary?
-        if not path.endswith('\\'):
-            path += '\\'
-
-        self._send_cmd('CFTPSPUTFILE', path, 3)
+        #if not path.endswith('\\'):
+        #    path += '\\'
+        path = 'test.txt'
+        self._send_cmd('CFTPSPUTFILE', path, ',', 3)
 
     def ftransfer_tx(self, src: Path, dst: str):
         size = os.path.getsize(src)
         self._send_cmd('CFTRANRX',
-                       str(PureWindowsPath('E:').joinpath(dst)), size)
+                       str(PurePath('E:').joinpath(dst)), ',', size)
 
         with open(src, 'rb') as fp:
             for _ in range(0, size):
@@ -162,7 +169,7 @@ def worker(conf: dict) -> None:
     passwd = conf.pop('password')
 
     modem = Modem()
-    modem.ftp_logout()
+    #modem.ftp_logout()
 
     try:
         modem.ftp_login(serv, port, user, passwd)
