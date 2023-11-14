@@ -61,7 +61,7 @@ def _td_hours(delta: timedelta) -> int:
 def _clean_old(img_path: Path) -> None:
     logging.info('Cleaning old photos')
 
-    expiry = datetime.now() - timedelta(seconds=20)
+    expiry = datetime.now() - timedelta(days=30)
     images = sorted((img_path.joinpath(x) for x in (os.listdir(img_path))),
                     key=os.path.getmtime, reverse=False)
 

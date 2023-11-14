@@ -5,10 +5,11 @@ from threading import Thread
 import camera
 import config
 import upload
+import sensors
 
 
 def main(conf_file: str) -> None:
-    workers = [upload.worker, camera.worker]
+    workers = [camera.worker, upload.worker, sensors.worker]
     conf = config.load(conf_file)
 
     for worker in workers:
