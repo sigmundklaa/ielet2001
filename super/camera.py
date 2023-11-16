@@ -74,8 +74,8 @@ def worker(config: dict) -> None:
 
     dst_dir = PurePath(config.pop('upload_dir'))
 
-    sr_margin = config.pop('sr_margin', {'hours': _td_hours(sun.SR_MARGIN)})
-    ss_margin = config.pop('ss_margin', {'hours': _td_hours(sun.SS_MARGIN)})
+    sr_margin = config.pop('sr_margin', {'hours': 1})
+    ss_margin = config.pop('ss_margin', {'hours': -1})
 
     sr_margin, ss_margin = timedelta(**sr_margin), timedelta(**ss_margin)
 

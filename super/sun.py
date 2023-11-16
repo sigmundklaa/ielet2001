@@ -3,9 +3,6 @@ from datetime import datetime, timedelta
 from astral import LocationInfo
 from astral.sun import sun as ASun
 
-SR_MARGIN = timedelta(hours=1)
-SS_MARGIN = timedelta(hours=- 1)
-
 CITY = LocationInfo('Trondheim', 'Norway', 'Europe/Oslo')
 
 
@@ -13,9 +10,9 @@ def sun(d: datetime) -> ASun:
     return ASun(CITY.observer, date=d, tzinfo=CITY.timezone)
 
 
-def is_daytime(t: datetime = datetime.now(),
-               srise_margin: timedelta = SR_MARGIN,
-               sset_margin: timedelta = SS_MARGIN,
+def is_daytime(t: datetime,
+               srise_margin: timedelta,
+               sset_margin: timedelta,
                ) -> bool:
     """Checks whether we are in daytime by comparing the time to the times
     of sunset and sunrise.
