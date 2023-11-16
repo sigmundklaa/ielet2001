@@ -11,6 +11,8 @@ from serial import Serial
 import config
 from upload import uploader
 
+TIME_FORMAT='%d/%m,%H'
+
 CONVERSIONS_TEMP = {
     'AirTemp': 'Lufttemperatur',
     'WaterTemp': 'Vanntemperatur',
@@ -29,7 +31,7 @@ CONVERSIONS_HUMID = {
     'Humidity': 'Fuktighet',
 }
 
-OUTDIR = Path.cwd().joinpath('sensordata')
+OUTDIR = Path(__file__).parent.parent.joinpath('sensordata')
 
 
 def _process_data(data: dict,
@@ -45,7 +47,7 @@ def _process_data(data: dict,
 
     now = datetime.now()
     new = {}
-    new['Tid'] = now.isoformat()
+    new['Tid'] = now.strftime(TIME_FORMAT)
 
     for k, v in conversions.items():
         try:
@@ -58,7 +60,7 @@ def _process_data(data: dict,
 
     while len(saved) > 0:
         current = saved[0]
-        if datetime.fromisoformat(current['Tid']) < now - validity_delta:
+        if datetime.strptime(current['Tid'], TIME_FORMAT) < now - validity_delta:
             saved.pop(0)
         else:
             break

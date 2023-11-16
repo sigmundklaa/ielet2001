@@ -9,7 +9,7 @@ import sensors
 
 
 def main(conf_file: str) -> None:
-    workers = [camera.worker, upload.worker, sensors.worker]
+    workers = [camera.worker, sensors.worker, upload.worker]
     conf = config.load(conf_file)
 
     for worker in workers:

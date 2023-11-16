@@ -11,7 +11,7 @@ import config
 import sun
 from upload import uploader
 
-IMG_PATH = Path.cwd().joinpath('images')
+IMG_PATH = Path(__file__).parent.parent.joinpath('images')
 IMG_CBUF_RANGE = 30
 
 
