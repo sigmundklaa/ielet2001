@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from astral import LocationInfo
 from astral.sun import sun as ASun
 
-CITY = LocationInfo('Trondheim', 'Norway', 'Europe/Oslo')
+CITY = LocationInfo('Trondheim', 'Norway', 'Europe/Oslo', 63.4, 10.4)
 
 
 def sun(d: datetime) -> ASun:
