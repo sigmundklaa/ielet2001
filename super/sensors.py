@@ -57,11 +57,13 @@ def _process_data(data: dict,
             return
 
     saved.append(new)
+    now = datetime.strptime(now.strftime(TIME_FORMAT), TIME_FORMAT)
 
     while len(saved) > 0:
         current = saved[0]
         if datetime.strptime(current['Tid'], TIME_FORMAT) < now - validity_delta:
             saved.pop(0)
+            logging.debug('Popping old measurement')
         else:
             break
 
@@ -100,4 +102,5 @@ def worker(conf: dict) -> None:
             time.sleep(0.1)
 
         real_data = data.decode()[:-1]
+        logging.debug(f'Read data: {real_data}')
         _handle_incoming(json.loads(real_data), validity_delta, upload_dir)
