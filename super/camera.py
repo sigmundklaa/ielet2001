@@ -8,34 +8,27 @@ from datetime import datetime, timedelta
 from picamera2 import Picamera2
 
 import config
+import re
 import sun
 from upload import uploader
 
 IMG_PATH = Path(__file__).parent.parent.joinpath('images')
-IMG_CBUF_RANGE = 30
 
 
 def _last_image_id(base: Path) -> int:
-    lastidx = 0
-    lasttime = 0
+    images = sorted((base.joinpath(x) for x in (os.listdir(base))),
+                    key=os.path.getmtime, reverse=True)
 
-    for i in range(0, IMG_CBUF_RANGE):
-        path = _build_filepath(base, i)
+    if len(images) == 0:
+        return 0
 
-        if not path.exists():
-            continue
-
-        modtime = os.path.getmtime(path)
-        if modtime > lasttime:
-            lasttime = modtime
-            lastidx = i
-
-    return lastidx
+    last = images[0].stem
+    return int(re.match(r'image_([\d]+)', last).groups()[0])
 
 
 def _build_relpath(base, offset: int = 0) -> Path:
     return _build_filepath(base,
-                           (_last_image_id(base) + offset) % IMG_CBUF_RANGE)
+                           (_last_image_id(base) + offset))
 
 
 def _build_filepath(base: Path, num: int) -> Path:
