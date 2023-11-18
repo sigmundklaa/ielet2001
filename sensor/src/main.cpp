@@ -16,7 +16,7 @@ RTC_DATA_ATTR int bootCount = 0;
 //saved to RTC memory so it doesn't get deleted every reboot
 
 //Recieving esp32 mac address for esp-now
-uint8_t broadcastAddress[] = {0xF4, 0x12, 0xFA, 0xDC, 0x3B, 0xA4};
+uint8_t broadcastAddress[] = {0xE8, 0x31, 0xCD, 0xE6, 0x0F, 0x20};
 
 esp_now_peer_info_t peerInfo;
 
@@ -36,6 +36,9 @@ esp_now_peer_info_t peerInfo;
 #define BME_CS 5 //CS pin
 
 #define DS18B20_pin 4 //DS18B20 pin (DQ) used for communication bus
+
+#define WIND_DIR 33 //Wind sensor direction pin
+#define WIND_SPEED 32 //Wind sensor speed pin
 
 /* TIMERS */
 unsigned long time_sensor_last; //time of previous sensor readings from ds and bme
@@ -164,10 +167,6 @@ float DS18B20()
     return ds.getTempCByIndex(0);
 }
 
-/* Wind sensor */
-const int windDirectionPin = 33;
-const int windSpeedPin = 32;
-
 uint16_t currspeed;
 uint16_t lastspeed;
 uint16_t windcount;
@@ -273,11 +272,15 @@ void deepsleep()
 {
     WiFi.mode(WIFI_OFF);
 
+    Serial.print("Time since wakeup: ");
+    Serial.print(millis()-boot_time);
+    Serial.println(" ms");
+
     Serial.print("Going to sleep, waking up in ");
     Serial.print(DEEPSLEEP_WAKEUP_TIMER/60000000);
     Serial.println(" minutes");
 
-    esp_sleep_enable_timer_wakeup(DEEPSLEEP_WAKEUP_TIMER);
+    esp_sleep_enable_timer_wakeup(DEEPSLEEP_WAKEUP_TIMER-((millis()-boot_time)*1000));
     esp_deep_sleep_start();
 }
 
@@ -303,23 +306,23 @@ void setup()
     //BME280
     bme280_connect(); 
 
-    pinMode(windSpeedPin, INPUT_PULLUP);
+    pinMode(WIND_SPEED, INPUT_PULLUP);
 }
 
 void loop() 
 {
-    wind_Speed(windSpeedPin, 4);
-    windDirection(windDirectionPin);
+    wind_Speed(WIND_SPEED, 4);
+    windDirection(WIND_DIR);
     get_avg_values();
 
     String output;
     DynamicJsonDocument doc(1024);
 
-    float AirTemp = roundf(bme_temperature * 10) / 10;
-    float Humidity = roundf(bme_humidity * 10) / 10;
-    float Pressure = roundf(bme_pressure * 10) / 10;
-    float WaterTemp = roundf(ds_temperature * 10) / 10;
-    float WindSpeed = roundf(wind_speed * 10) / 10;
+    int AirTemp = round(bme_temperature);
+    int Humidity = round(bme_humidity);
+    int Pressure = round(bme_pressure/100); //divide by 100 to get hPa
+    int WaterTemp = round(ds_temperature);
+    int WindSpeed = round(wind_speed);
 
     doc["AirTemp"] = AirTemp;
     doc["Humidity"] = Humidity;
@@ -332,11 +335,6 @@ void loop()
 
     //sending the data to reciever
     esp_err_t result = esp_now_send(broadcastAddress, (uint8_t *) output.c_str(), output.length() + 1);
-
-
-    Serial.print("Time since wakeup: ");
-    Serial.print(millis()-boot_time);
-    Serial.println(" ms");
 
     deepsleep();
 }

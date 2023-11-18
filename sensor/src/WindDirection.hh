@@ -70,8 +70,7 @@ const String NorthWest = "NW";
 const int NorthWestDeg = 45;
 const String NorthNorthWest = "NNW";
 const float NorthNorthWestDeg = 22.5;
-const String Error = "Error";
-
+const String Error = "Wind direction sensor is not connected, or values are outside of normal range";
 String Direction = "none";
 int DirectionDeg = 0;
 
