@@ -8,34 +8,27 @@ from datetime import datetime, timedelta
 from picamera2 import Picamera2
 
 import config
+import re
 import sun
 from upload import uploader
 
-IMG_PATH = Path.cwd().joinpath('images')
-IMG_CBUF_RANGE = 30
+IMG_PATH = Path(__file__).parent.parent.joinpath('images')
 
 
 def _last_image_id(base: Path) -> int:
-    lastidx = 0
-    lasttime = 0
+    images = sorted((base.joinpath(x) for x in (os.listdir(base))),
+                    key=os.path.getmtime, reverse=True)
 
-    for i in range(0, IMG_CBUF_RANGE):
-        path = _build_filepath(base, i)
+    if len(images) == 0:
+        return 0
 
-        if not path.exists():
-            continue
-
-        modtime = os.path.getmtime(path)
-        if modtime > lasttime:
-            lasttime = modtime
-            lastidx = i
-
-    return lastidx
+    last = images[0].stem
+    return int(re.match(r'image_([\d]+)', last).groups()[0])
 
 
 def _build_relpath(base, offset: int = 0) -> Path:
     return _build_filepath(base,
-                           (_last_image_id(base) + offset) % IMG_CBUF_RANGE)
+                           (_last_image_id(base) + offset))
 
 
 def _build_filepath(base: Path, num: int) -> Path:
@@ -61,7 +54,7 @@ def _td_hours(delta: timedelta) -> int:
 def _clean_old(img_path: Path) -> None:
     logging.info('Cleaning old photos')
 
-    expiry = datetime.now() - timedelta(seconds=20)
+    expiry = datetime.now() - timedelta(days=30)
     images = sorted((img_path.joinpath(x) for x in (os.listdir(img_path))),
                     key=os.path.getmtime, reverse=False)
 
@@ -81,8 +74,8 @@ def worker(config: dict) -> None:
 
     dst_dir = PurePath(config.pop('upload_dir'))
 
-    sr_margin = config.pop('sr_margin', {'hours': _td_hours(sun.SR_MARGIN)})
-    ss_margin = config.pop('ss_margin', {'hours': _td_hours(sun.SS_MARGIN)})
+    sr_margin = config.pop('sr_margin', {'hours': 1})
+    ss_margin = config.pop('ss_margin', {'hours': -1})
 
     sr_margin, ss_margin = timedelta(**sr_margin), timedelta(**ss_margin)
 

@@ -1,10 +1,11 @@
 
 import functools
 from typing import Callable, Any, Union
+from pathlib import Path
 
 import yaml
 
-DEFAULT_CONFIG_PATH = './super.yml'
+DEFAULT_CONFIG_PATH = Path(__file__).parent.parent.joinpath('super.yml')
 
 
 def tagged(field_name: str) -> Callable:

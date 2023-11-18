@@ -1,0 +1,12 @@
+upload:
+  server: "ftp.server.com"
+  port: 21
+  user: username
+  password: password
+camera:
+  upload_dir: "/dir"
+  quality: 25
+  capture_delay_hr: 0.01
+sensors:
+  upload_dir: "/dir"
+  validity_delta_d: 7
