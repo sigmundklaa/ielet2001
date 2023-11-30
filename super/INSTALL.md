@@ -8,3 +8,8 @@ Installation of the required Python dependencies can be done with:
 ```
 pip install -r requirements.txt
 ```
+
+To run the supernode it is also required to use a config file. This file can
+be created by running `cp super-sample.yml super.yml` in the root directory
+of the repository. This file is read at program start, so to change a value
+just change it in the config and restart the program.
