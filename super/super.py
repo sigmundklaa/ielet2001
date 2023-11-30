@@ -9,6 +9,12 @@ import sensors
 
 
 def main(conf_file: str) -> None:
+    """Main entrypoint for the application. This function loads the config file
+    and starts one thread for each of the relevant workers. Each worker is
+    passed its entry in the config file as its only argument.
+
+    :param conf_file: Path to config file
+    """
     workers = [camera.worker, sensors.worker, upload.worker]
     conf = config.load(conf_file)
 
@@ -23,6 +29,7 @@ def main(conf_file: str) -> None:
         th = Thread(target=worker, args=(conf.pop(fname, {}),))
         th.start()
 
+    # Ensure we dont have a poorly crafted config file.
     conf_remaining = conf.keys()
     if len(conf_remaining) > 0:
         raise Exception(

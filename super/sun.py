@@ -7,6 +7,11 @@ CITY = LocationInfo('Trondheim', 'Norway', 'Europe/Oslo', 63.4, 10.4)
 
 
 def sun(d: datetime) -> ASun:
+    """Create an astral sun object centered around `CITY`.
+
+    :param d: Datetime object representing now
+    :return: Sun object
+    """
     return ASun(CITY.observer, date=d, tzinfo=CITY.timezone)
 
 
@@ -17,7 +22,7 @@ def is_daytime(t: datetime,
     """Checks whether we are in daytime by comparing the time to the times
     of sunset and sunrise.
 
-    :param t: Time to compare against 
+    :param t: Time to compare against
     :param srise_margin: Margin from sunrise.
     :param sset_margin: Margin from sunset.
     """
