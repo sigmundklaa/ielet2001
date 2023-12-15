@@ -1,0 +1,199 @@
+<!-- Load the Google Charts library -->
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-ui.min.js"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-exports.min.js"></script>
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-circular-gauge.min.js"></script>
+<script src="https://cdn.anychart.com/releases/v8/themes/monochrome.min.js"></script>
+<style type="text/css">
+
+  #container {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
+<div id="container" style="width: 100%; height: 500px;"></div>
+
+<script type="text/javascript">
+    let extractedData = null;
+
+    async function dataFetch() {
+    try {
+        const windResponse = await fetch('http://tranmael.no/wp-content/uploads/raspberry/sensordata/Vind.json');
+        const windData = await windResponse.json();
+
+        // Check if windData is not empty
+        if (windData.length > 0) {
+            const latestData = windData[windData.length - 1]; // Get the last element
+            return [
+                ['Vindhastighet', 'Vindretning'],
+                [parseFloat(latestData.Vindretning), parseFloat(latestData.Vindhastighet)]
+            ];
+        } else {
+            console.error("No data available");
+            return [];
+        }
+    } catch (error) {
+        console.error("An error occurred:", error);
+        return [];
+    }
+}
+
+    dataFetch().then(data => {
+        extractedData = data[1];
+        onDataReady();  // Notify that the data is ready
+    });
+
+    function onDataReady() {
+        anychart.onDocumentReady(function () {
+        // set chart theme
+        anychart.theme('monochrome');
+            var gauge = anychart.gauges.circular();
+            gauge
+            .fill('#fff')
+            .stroke(null)
+            .padding(0)
+            .margin(30)
+            .startAngle(0)
+            .sweepAngle(360);
+
+            gauge
+            .axis()
+            .labels()
+            .padding(3)
+            .position('outside')
+            .format('{%Value}\u00B0');
+
+            gauge.data(extractedData);
+
+            gauge
+            .axis()
+            .scale()
+            .minimum(0)
+            .maximum(360)
+            .ticks({ interval: 30 })
+            .minorTicks({ interval: 10 });
+
+            gauge
+            .axis()
+            .fill('#7c868e')
+            .startAngle(0)
+            .sweepAngle(-360)
+            .width(1)
+            .ticks({
+                type: 'line',
+                fill: '#7c868e',
+                length: 4,
+                position: 'outside'
+            });
+
+            gauge
+            .axis(1)
+            .fill('#7c868e')
+            .startAngle(270)
+            .radius(40)
+            .sweepAngle(180)
+            .width(1)
+            .ticks({
+                type: 'line',
+                fill: '#7c868e',
+                length: 4,
+                position: 'outside'
+            });
+
+            gauge
+            .axis(1)
+            .labels()
+            .padding(3)
+            .position('outside')
+            .format('{%Value} m/s');
+
+            gauge
+            .axis(1)
+            .scale()
+            .minimum(0)
+            .maximum(25)
+            .ticks({ interval: 5 })
+            .minorTicks({ interval: 1 });
+
+            gauge.title().padding(0).margin([0, 0, 10, 0]);
+
+            gauge
+            .marker()
+            .fill('#64b5f6')
+            .stroke(null)
+            .size('15%')
+            .zIndex(120)
+            .radius('97%');
+
+            gauge
+            .needle()
+            .fill('#1976d2')
+            .stroke(null)
+            .axisIndex(1)
+            .startRadius('6%')
+            .endRadius('38%')
+            .startWidth('2%')
+            .middleWidth(null)
+            .endWidth('0');
+
+            gauge.cap().radius('4%').fill('#1976d2').enabled(true).stroke(null);
+
+            var bigTooltipTitleSettings = {
+            fontFamily: '\'Verdana\', Helvetica, Arial, sans-serif',
+            fontWeight: 'normal',
+            fontSize: '12px',
+            hAlign: 'left',
+            fontColor: '#212121'
+            };
+
+            gauge
+            .label()
+            .text(
+                '<span style="color: #64B5F6; font-size: 13px">Vindretning: </span>' +
+                '<span style="color: #5AA3DD; font-size: 15px">' +
+                extractedData[0] +
+                '\u00B0 (+/- 0.5\u00B0)</span><br>' +
+                '<span style="color: #1976d2; font-size: 13px">Vindhastighet:</span> ' +
+                '<span style="color: #166ABD; font-size: 15px">' +
+                extractedData[1] +
+                'm/s</span>'
+            )
+            .useHtml(true)
+            .textSettings(bigTooltipTitleSettings);
+            gauge
+            .label()
+            .hAlign('center')
+            .anchor('center-top')
+            .offsetY(-20)
+            .padding(15, 20)
+            .background({
+                fill: '#fff',
+                stroke: {
+                thickness: 1,
+                color: '#E0F0FD'
+                }
+            });
+
+            // set container id for the chart
+            gauge.container('container');
+
+            // initiate chart drawing
+            gauge.draw();
+    });
+
+
+
+
+    console.log(extractedData);
+}
+
+
+
+ 
+
+</script>

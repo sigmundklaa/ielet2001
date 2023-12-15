@@ -1,0 +1,47 @@
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<div id="chart_divPress" style="width: 100%; height: 500px;"></div>
+
+<script type="text/javascript">
+    // Load the Visualization API and the corechart package.
+    google.charts.load('current', {'packages':['corechart']});
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(drawChart);
+
+    async function drawChart() {
+        // Fetch both datasets
+        const airPressResponse = await fetch('http://tranmael.no/wp-content/uploads/raspberry/sensordata/Lufttrykk.json');
+        const pressData = await airPressResponse.json();
+    
+        let dataArrayPress = [];
+        // Header for the data 
+        dataArrayPress.push(['Tid', 'Lufttrykk i hPa']);
+        
+        // Convert the JSON data to an array format suitable for Google Charts
+        for (let i = 0; i < pressData.length; i++) {
+            dataArrayPress.push([
+                pressData[i].Tid, 
+                parseFloat(pressData[i].Lufttrykk)
+            ]);
+        }
+
+        // Set chart options
+        const optionsPress = {
+            'title': 'Lufttrykk siste 7 dager',
+            'width': '100%',
+            'height': 500,
+            'hAxis': {
+                'title': 'Dato/Tid',
+                'slantedText': true,
+                'slantedTextAngle': 45
+            },
+        };
+
+        data = google.visualization.arrayToDataTable(dataArrayPress);
+
+        // Instantiate and draw our chart, passing in some options.
+        chart = new google.visualization.LineChart(document.getElementById('chart_divPress'));
+        chart.draw(data, optionsPress);
+    }
+</script>

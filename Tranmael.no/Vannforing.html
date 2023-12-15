@@ -1,0 +1,65 @@
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<div id="curve_chart" style="width: 100%; height: 500px"></div>
+
+<script type="text/javascript">
+  // Load the Visualization API and call the fetchData function
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(fetchData);
+  
+  // Function to fetch data from the API
+  function fetchData() {
+    const url = "https://hydapi.nve.no/api/v1/Observations?StationId=122.9.0&Parameter=1001&ResolutionTime=60&ReferenceTime=P7D%2F";
+    const apiKey = "Ba/u1VgXBkOCBlXWjAR2qw==";
+
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+        'X-API-Key': apiKey
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Extract time and value from the data
+      const observations = data.data[0].observations;
+      const chartData = observations.map(obs => [new Date(obs.time), obs.value]);
+
+      // Now we can use 'chartData' with Google Charts
+      drawChart(chartData);
+    })
+    .catch(error => {
+      console.error('Fetching error:', error);
+    });
+  }
+
+  // Function to draw the chart
+  function drawChart(chartData) {
+      var data = new google.visualization.DataTable();
+      data.addColumn('datetime', 'Tid/Dato');
+      data.addColumn('number', 'Vannføring i m³/s');
+
+      data.addRows(chartData);
+
+      var options = {
+      title: 'Vannføring Gaulfoss siste 7 dager',
+      hAxis: {
+        format: 'dd/MM', // Format the horizontal axis labels as day/month
+        gridlines: {count: -1, units: {days: {format: ['dd/MM']}}},
+        minorGridlines: {units: {days: {format: ['dd/MM']}}}
+      },
+    };
+
+      var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+      chart.draw(data, options);
+    
+  }
+</script>
+
+
+
